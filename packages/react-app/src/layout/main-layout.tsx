@@ -1,9 +1,9 @@
 import { XProvider } from '@ant-design/x'
-import { DifyApi } from '@dify-chat/api'
 import { AppModeEnums, IDifyAppItem, useAppContext } from '@dify-chat/core'
 import React from 'react'
 
 import { colors } from '@/theme/config'
+import { DifyApi } from '@/utils/dify-api'
 
 import ChatLayout from './chat-layout'
 import CommonLayout from './common-layout'
@@ -40,8 +40,6 @@ const MainLayout = (props: IMainLayoutProps) => {
 
 	// FIXME: 去掉这里的默认值
 	const appMode = currentApp?.config?.info?.mode || AppModeEnums.CHATBOT
-
-	console.log('currentApp in mainn-layout', currentApp)
 
 	return (
 		<XProvider theme={{ token: { colorPrimary: colors.primary, colorText: colors['theme-text'] } }}>

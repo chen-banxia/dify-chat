@@ -1,32 +1,31 @@
 import { DownCircleTwoTone } from '@ant-design/icons'
-import { createDifyApiInstance, DifyApi } from '@dify-chat/api'
-import { LucideIcon } from '@dify-chat/components'
+import { LucideIcon } from '@/components'
 import {
 	AppContextProvider,
+	DEFAULT_APP_SITE_SETTING,
 	ICurrentApp,
 	IDifyAppItem,
-	IDifyChatContextMultiApp,
 } from '@dify-chat/core'
-import { useDifyChat } from '@dify-chat/core'
 import { useIsMobile } from '@dify-chat/helpers'
 import { useMount, useRequest } from 'ahooks'
 import { Dropdown, message } from 'antd'
 import { useHistory, useParams } from 'pure-react-router'
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { flushSync } from 'react-dom'
 
-import { useAppSiteSetting } from '@/hooks/useApi'
+import { useAuth } from '@/hooks/use-auth'
+import appService from '@/services/app'
+import { createDifyApiInstance, DifyApi } from '@/utils/dify-api'
 
 import MainLayout from './main-layout'
 
-const MultiAppLayout: React.FC = () => {
-	const { ...difyChatContext } = useDifyChat()
-	const { user, appService } = difyChatContext as IDifyChatContextMultiApp
+const MultiAppLayout = () => {
 	const history = useHistory()
+	const { userId } = useAuth()
 
 	const [difyApi] = useState(
 		createDifyApiInstance({
-			user,
+			user: userId,
 			apiBase: '',
 			apiKey: '',
 		}),
@@ -68,6 +67,9 @@ const MultiAppLayout: React.FC = () => {
 				message.error(`获取应用列表失败: ${error}`)
 				console.error(error)
 			},
+			onFinally: () => {
+				setInitLoading(false)
+			},
 		},
 	)
 
@@ -80,20 +82,38 @@ const MultiAppLayout: React.FC = () => {
 		},
 	)
 
-	const { getAppSiteSettting } = useAppSiteSetting()
+	const { runAsync: getAppSiteSettting } = useRequest(
+		(difyApi: DifyApi) => {
+			return difyApi
+				.getAppSiteSetting()
+				.then(res => {
+					return res
+				})
+				.catch(err => {
+					console.error(err)
+					console.warn(
+						'Dify 版本提示: 获取应用 WebApp 设置失败，已降级为使用默认设置。如需与 Dify 配置同步，请确保你的 Dify 版本 >= v1.4.0',
+					)
+					return DEFAULT_APP_SITE_SETTING
+				})
+		},
+		{
+			manual: true,
+		},
+	)
 
 	/**
 	 * 初始化应用信息
 	 */
 	const initApp = async () => {
-		const appItem = appList?.find(item => item.id === selectedAppId)
-		console.log('appItem', appItem)
+		const appItem = await appService.getAppByID(selectedAppId)
 		if (!appItem) {
 			return
 		}
 		difyApi.updateOptions({
-			user,
+			user: userId,
 			...appItem.requestConfig,
+			apiBase: `/${selectedAppId}`,
 		})
 		setInitLoading(true)
 		// 获取应用参数
@@ -103,7 +123,6 @@ const MultiAppLayout: React.FC = () => {
 		Promise.all(promises)
 			.then(res => {
 				const [parameters, siteSetting] = res
-				console.log('更新一下', appItem)
 				setCurrentApp({
 					config: appItem,
 					parameters: parameters!,

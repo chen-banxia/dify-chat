@@ -22,3 +22,17 @@ export const Roles = {
 	 */
 	LOCAL: 'local',
 } as const
+
+/**
+ * 运行模式
+ */
+export const RunningModes = {
+	/**
+	 * 单应用
+	 */
+	SingleApp: 'singleApp',
+	/**
+	 * 多应用
+	 */
+	MultiApp: 'multiApp',
+} as const

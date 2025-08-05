@@ -17,3 +17,6 @@ dist/
 
 # 框架临时文件
 .next
+
+packages/server/apps.json
+.dify-chat

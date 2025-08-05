@@ -1,7 +1,7 @@
-import { GithubOutlined } from "@ant-design/icons";
-import { Button } from "antd";
+import { GithubOutlined } from '@ant-design/icons'
+import { Button } from 'antd'
 
-import LogoImage from "../assets/images/logo.png";
+import LogoImage from '../assets/images/logo.png'
 
 export const LogoIcon = () => {
 	return (
@@ -11,8 +11,8 @@ export const LogoIcon = () => {
 			draggable={false}
 			alt="logo"
 		/>
-	);
-};
+	)
+}
 
 export const GithubIcon = () => {
 	return (
@@ -20,39 +20,51 @@ export const GithubIcon = () => {
 			type="link"
 			href="https://github.com/lexmin0412/dify-chat"
 			target="_blank"
-			className="px-0"
+			className="!px-0"
 		>
 			<GithubOutlined className="text-xl cursor-pointer text-theme-text" />
 		</Button>
-	);
-};
+	)
+}
 
 interface ILogoProps {
 	/**
 	 * 是否隐藏 Github 图标
 	 */
-	hideGithubIcon?: boolean;
+	hideGithubIcon?: boolean
 	/**
 	 * 是否隐藏文本
 	 */
-	hideText?: boolean;
+	hideText?: boolean
+	/**
+	 * 文本
+	 */
+	text?: string
+	/**
+	 * 自定义 Logo 渲染
+	 */
+	renderLogo?: () => React.ReactNode
 }
 
 export const Logo = (props: ILogoProps) => {
-	const { hideGithubIcon, hideText } = props;
+	const { hideGithubIcon, hideText, text, renderLogo } = props
 
 	return (
 		<div className="flex h-16 items-center justify-start !py-0 box-border">
 			<div className="h-full flex items-center flex-1 overflow-hidden">
-				<img
-					className="w-8 h-8 inline-block"
-					src={LogoImage}
-					draggable={false}
-					alt="logo"
-				/>
+				{renderLogo ? (
+					renderLogo()
+				) : (
+					<img
+						className="w-8 h-8 inline-block"
+						src={LogoImage}
+						draggable={false}
+						alt="logo"
+					/>
+				)}
 				{!hideText ? (
 					<span className="inline-block my-0 ml-3 font-bold text-lg text-theme-text">
-						Dify Chat
+						{text || 'Dify Chat'}
 					</span>
 				) : null}
 			</div>
@@ -67,5 +79,5 @@ export const Logo = (props: ILogoProps) => {
 				</Button>
 			)}
 		</div>
-	);
-};
+	)
+}

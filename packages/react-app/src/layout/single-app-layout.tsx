@@ -1,24 +1,28 @@
-import { createDifyApiInstance, DifyApi } from '@dify-chat/api'
-import { AppContextProvider, ICurrentApp, IDifyChatContextSingleApp } from '@dify-chat/core'
-import { useDifyChat } from '@dify-chat/core'
+import {
+	AppContextProvider,
+	DEFAULT_APP_SITE_SETTING,
+	ICurrentApp,
+	IDifyAppItem,
+} from '@dify-chat/core'
 import { useMount, useRequest } from 'ahooks'
-import { Spin } from 'antd'
-import React, { useState } from 'react'
+import { message, Spin } from 'antd'
+import { useState } from 'react'
 
-import { useAppSiteSetting } from '@/hooks/useApi'
+import { useAuth } from '@/hooks/use-auth'
+import appService from '@/services/app'
+import { createDifyApiInstance, DifyApi } from '@/utils/dify-api'
 
 import MainLayout from './main-layout'
 
-const SingleAppLayout: React.FC = () => {
-	const difyChatContext = useDifyChat()
-	const { user, appConfig } = difyChatContext as IDifyChatContextSingleApp
+const SingleAppLayout = () => {
 	const [selectedAppId, setSelectedAppId] = useState('')
 	const [initLoading, setInitLoading] = useState(false)
 	const [currentApp, setCurrentApp] = useState<ICurrentApp>() // 新增 currentApp 状态用于保存当前应用的 inf
+	const { userId } = useAuth()
 
 	const [difyApi] = useState(
 		createDifyApiInstance({
-			user,
+			user: userId,
 			apiBase: '',
 			apiKey: '',
 		}),
@@ -33,13 +37,37 @@ const SingleAppLayout: React.FC = () => {
 		},
 	)
 
-	const { getAppSiteSettting } = useAppSiteSetting()
+	const { runAsync: getAppSiteSettting } = useRequest(
+		(difyApi: DifyApi) => {
+			return difyApi
+				.getAppSiteSetting()
+				.then(res => {
+					return res
+				})
+				.catch(err => {
+					console.error(err)
+					console.warn(
+						'Dify 版本提示: 获取应用 WebApp 设置失败，已降级为使用默认设置。如需与 Dify 配置同步，请确保你的 Dify 版本 >= v1.4.0',
+					)
+					return DEFAULT_APP_SITE_SETTING
+				})
+		},
+		{
+			manual: true,
+		},
+	)
 
 	const initInSingleMode = async () => {
+		const appList = await appService.getApps()
+		const appConfig = appList[0] as IDifyAppItem
+		if (!appConfig) {
+			message.error('请先配置应用')
+			return
+		}
 		difyApi.updateOptions({
-			user,
-			apiBase: (difyChatContext as IDifyChatContextSingleApp).appConfig.requestConfig.apiBase,
-			apiKey: (difyChatContext as IDifyChatContextSingleApp).appConfig.requestConfig.apiKey,
+			user: userId,
+			apiBase: appConfig.requestConfig.apiBase,
+			apiKey: appConfig.requestConfig.apiKey,
 		})
 		setInitLoading(true)
 		const [difyAppInfo, appParameters, appSiteSetting] = await Promise.all([
@@ -50,7 +78,6 @@ const SingleAppLayout: React.FC = () => {
 		// 获取应用信息
 		setCurrentApp({
 			config: {
-				id: Math.random().toString(),
 				...appConfig,
 				info: {
 					...difyAppInfo,
@@ -77,25 +104,29 @@ const SingleAppLayout: React.FC = () => {
 		)
 	}
 
-	return currentApp ? (
-		<AppContextProvider
-			value={{
-				appLoading: initLoading,
-				currentAppId: selectedAppId,
-				setCurrentAppId: setSelectedAppId,
-				currentApp: currentApp,
-				setCurrentApp,
-			}}
-		>
-			<MainLayout
-				difyApi={difyApi}
-				initLoading={false}
-				renderCenterTitle={appInfo => {
-					return <>{appInfo?.name}</>
-				}}
-			/>
-		</AppContextProvider>
-	) : null
+	return (
+		<>
+			{currentApp ? (
+				<AppContextProvider
+					value={{
+						appLoading: initLoading,
+						currentAppId: selectedAppId,
+						setCurrentAppId: setSelectedAppId,
+						currentApp: currentApp,
+						setCurrentApp,
+					}}
+				>
+					<MainLayout
+						difyApi={difyApi}
+						initLoading={false}
+						renderCenterTitle={appInfo => {
+							return <>{appInfo?.name}</>
+						}}
+					/>
+				</AppContextProvider>
+			) : null}
+		</>
+	)
 }
 
 export default SingleAppLayout

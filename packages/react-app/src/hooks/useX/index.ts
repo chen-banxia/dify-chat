@@ -8,7 +8,7 @@ import {
 	IFile,
 } from '@dify-chat/api'
 import { IWorkflowNode } from '@dify-chat/api'
-import { useAppContext, useDifyChat } from '@dify-chat/core'
+import { useAppContext } from '@dify-chat/core'
 import { isTempId } from '@dify-chat/helpers'
 import { message as antdMessage, FormInstance } from 'antd'
 import { useState } from 'react'
@@ -16,6 +16,7 @@ import { useState } from 'react'
 import { RESPONSE_MODE } from '@/config'
 import { IAgentMessage, IMessageFileItem } from '@/types'
 
+import { useAuth } from '../use-auth'
 import workflowDataStorage from './workflow-data-storage'
 
 export const useX = (options: {
@@ -45,7 +46,7 @@ export const useX = (options: {
 		difyApi,
 	} = options
 	const { currentApp } = useAppContext()
-	const { user } = useDifyChat()
+	const { userId: user } = useAuth()
 	const [currentTaskId, setCurrentTaskId] = useState('')
 
 	const [agent] = useXAgent<IAgentMessage>({
@@ -179,7 +180,7 @@ export const useX = (options: {
 
 					if (parsedData.event === EventEnum.MESSAGE_END) {
 						// 如果开启了建议问题，获取下一轮问题建议
-						if (currentApp?.parameters?.suggested_questions_after_answer.enabled) {
+						if (currentApp?.parameters?.suggested_questions_after_answer?.enabled) {
 							getNextSuggestions(parsedData.message_id)
 						}
 					}

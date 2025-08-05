@@ -29,6 +29,7 @@ export const initResponsiveConfig = (
  * 是否是移动端
  */
 export const useIsMobile = () => {
-	const { sm, md } = useResponsive() as unknown as ITailwindCompatibleResponsiveConfig
+	const responsive = useResponsive() as unknown as ITailwindCompatibleResponsiveConfig
+	const { sm, md } = responsive || {}
 	return !!sm && !md
 }

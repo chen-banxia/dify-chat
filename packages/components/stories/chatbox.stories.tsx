@@ -1,4 +1,5 @@
 import { IMessageItem4Render } from '@dify-chat/api'
+import { generateUuidV4 } from '@dify-chat/helpers'
 import type { Meta, StoryObj } from '@storybook/react'
 import React, { useState } from 'react'
 
@@ -58,7 +59,7 @@ export const Primary: Story = {
 						setMessages([
 							...messages,
 							{
-								id: Math.random().toString(),
+								id: generateUuidV4(),
 								role: 'user',
 								content,
 								status: 'local',
@@ -69,7 +70,7 @@ export const Primary: Story = {
 						setIsRequesting(false)
 					}}
 					conversationId="1"
-					uploadFileApi={file => {
+					uploadFileApi={() => {
 						return Promise.resolve({
 							id: 'mock-file-id',
 							name: 'mock-file.txt',

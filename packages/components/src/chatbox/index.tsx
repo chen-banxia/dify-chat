@@ -119,8 +119,7 @@ export const Chatbox = (props: ChatboxProps) => {
 				? {
 						icon: aiIcon,
 						style: {
-							background: isDark ? 'transparent' : '#fde3cf',
-							// opacity: 0.9,
+							background: currentApp?.site?.icon_background || (isDark ? 'transparent' : '#fde3cf'),
 							border: isDark ? '1px solid var(--theme-border-color)' : 'none',
 							color: isDark ? 'var(--theme-text-color)' : '#666',
 						},

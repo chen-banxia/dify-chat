@@ -22,6 +22,7 @@ export interface IUserInputFormItemValueBase {
 	default: string
 	label: string
 	required: boolean
+	hide?: boolean
 	variable: string
 	options?: string[]
 	/**
@@ -304,6 +305,8 @@ interface IMessageItem {
 
 interface IGetConversationHistoryResponse {
 	data: IMessageItem[]
+	has_more: boolean
+	limit: number
 }
 
 export interface IDifyApiOptions {

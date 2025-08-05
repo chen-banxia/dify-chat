@@ -5,8 +5,8 @@ import { Button, GetProp, message, Upload } from 'antd'
 import { RcFile, UploadFile } from 'antd/es/upload'
 import { useEffect, useMemo, useState } from 'react'
 
-import { FileTypeMap, getDifyFileType, getFileExtByName } from '../../message-sender/utils'
-import { completeFileUrl } from '../../utils'
+import { FileTypeMap, getDifyFileType, getFileExtByName } from '@/message-sender/utils'
+import { completeFileUrl } from '@/utils'
 
 export interface IUploadFileItem extends UploadFile {
 	type?: string

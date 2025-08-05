@@ -1,25 +1,25 @@
-import { DifyChatProvider } from '@dify-chat/core'
 import { initResponsiveConfig } from '@dify-chat/helpers'
 import { useThemeContext } from '@dify-chat/theme'
-import FingerPrintJS from '@fingerprintjs/fingerprintjs'
-import { useMount } from 'ahooks'
 import { theme as antdTheme, ConfigProvider } from 'antd'
+import zhCN from 'antd/es/locale/zh_CN'
 import { BrowserRouter, type IRoute } from 'pure-react-router'
-import { useState } from 'react'
+
+import { difyChatRuntimeConfig } from '@/config/global'
 
 import './App.css'
 import LayoutIndex from './layout'
-import AppListPage from './pages/app-list'
+import AppListPage from './pages/apps'
+import AuthPage from './pages/auth'
 import ChatPage from './pages/chat'
-// import DifyAppService from './services/app/localstorage'   //  使用 localstorage 存储应用信息
-import DifyAppService from './services/app/static-readonly'
-
-// 静态固定，不推荐
 
 // 初始化响应式配置
 initResponsiveConfig()
 
+// 初始化全局运行时配置
+difyChatRuntimeConfig.init('multiApp')
+
 const routes: IRoute[] = [
+	{ path: '/auth', component: () => <AuthPage /> },
 	{ path: '/chat', component: () => <ChatPage /> },
 	{ path: '/app/:appId', component: () => <ChatPage /> },
 	{ path: '/apps', component: () => <AppListPage /> },
@@ -29,22 +29,11 @@ const routes: IRoute[] = [
  * Dify Chat 的最小应用实例
  */
 export default function App() {
-	const [userId, setUserId] = useState<string>('')
-
-	useMount(() => {
-		// 模拟登录过程获取用户唯一标识
-		const loadFP = async () => {
-			const fp = await FingerPrintJS.load()
-			const result = await fp.get()
-			setUserId(result.visitorId)
-		}
-		loadFP()
-	})
-
 	const { isDark } = useThemeContext()
 
 	return (
 		<ConfigProvider
+			locale={zhCN}
 			theme={{
 				algorithm: isDark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
 			}}
@@ -53,18 +42,7 @@ export default function App() {
 				basename="/dify-chat"
 				routes={routes}
 			>
-				<DifyChatProvider
-					value={{
-						mode: 'multiApp',
-						user: userId,
-						// 默认使用 localstorage, 如果需要使用其他存储方式，可以实现 DifyAppStore 接口后传入，异步接口实现参考 src/services/app/restful.ts
-						appService: new DifyAppService(),
-						// 固定数据不支持增删改，所以需要禁用应用配置权限
-						enableSetting: false,
-					}}
-				>
-					<LayoutIndex />
-				</DifyChatProvider>
+				<LayoutIndex />
 			</BrowserRouter>
 		</ConfigProvider>
 	)

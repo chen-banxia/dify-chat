@@ -1,65 +1,88 @@
-import { LucideIcon } from "@dify-chat/components";
-import { useIsMobile } from "@dify-chat/helpers";
-import { ThemeSelector, useThemeContext } from "@dify-chat/theme";
-import { Space } from "antd";
-import classNames from "classnames";
-import React from "react";
+import { LucideIcon } from '@dify-chat/components'
+import { useIsMobile } from '@dify-chat/helpers'
+import { ThemeSelector, useThemeContext } from '@dify-chat/theme'
+import { Space } from 'antd'
+import classNames from 'classnames'
+import React from 'react'
 
-import { GithubIcon, Logo } from "./logo";
+import CenterTitleWrapper from './center-title-wrapper'
+import { GithubIcon, Logo } from './logo'
 
-import CenterTitleWrapper from "./center-title-wrapper";
-
-interface IHeaderLayoutProps {
-	title: React.ReactNode;
-	rightIcon?: React.ReactNode;
+export interface IHeaderLayoutProps {
+	/**
+	 * 自定义标题
+	 */
+	title?: React.ReactNode
+	/**
+	 * 传进来的标题是否已经包含容器
+	 */
+	isTitleWrapped?: boolean
+	/**
+	 * 自定义右侧图标
+	 */
+	rightIcon?: React.ReactNode
+	/**
+	 * Logo 文本
+	 */
+	logoText?: string
+	/**
+	 * 自定义 Logo 渲染
+	 */
+	renderLogo?: () => React.ReactNode
 }
 
-const HeaderSiderIcon = (props: {
-	align: "left" | "right";
-	children: React.ReactNode;
-}) => {
+const HeaderSiderIcon = (props: { align: 'left' | 'right'; children: React.ReactNode }) => {
 	return (
 		<div
 			className={classNames({
-				"flex-1 h-full flex items-center": true,
-				"justify-start": props.align === "left",
-				"justify-end": props.align === "right",
+				'flex-1 h-full flex items-center': true,
+				'justify-start': props.align === 'left',
+				'justify-end': props.align === 'right',
 			})}
 		>
 			{props.children}
 		</div>
-	);
-};
+	)
+}
 
 /**
  * 头部布局组件
  */
 export default function HeaderLayout(props: IHeaderLayoutProps) {
-	const { title, rightIcon } = props;
-	const { themeMode } = useThemeContext();
-	const isMobile = useIsMobile();
+	const { isTitleWrapped, title, rightIcon, logoText, renderLogo } = props
+	const { themeMode } = useThemeContext()
+	const isMobile = useIsMobile()
 	return (
 		<div className="h-16 flex items-center justify-between px-4">
 			{/* 🌟 Logo */}
 			<HeaderSiderIcon align="left">
-				<Logo hideText={isMobile} hideGithubIcon />
+				<Logo
+					text={logoText}
+					renderLogo={renderLogo}
+					hideText={isMobile}
+					hideGithubIcon
+				/>
 			</HeaderSiderIcon>
 
-			<CenterTitleWrapper>{title}</CenterTitleWrapper>
+			{/* 中间标题 */}
+			{isTitleWrapped ? title : <CenterTitleWrapper>{title}</CenterTitleWrapper>}
 
 			{/* 右侧图标 */}
 			<HeaderSiderIcon align="right">
 				{rightIcon || (
-					<Space className="flex items-center">
+					<Space
+						className="flex items-center"
+						size={16}
+					>
 						<ThemeSelector>
 							<div className="flex items-center cursor-pointer">
 								<LucideIcon
 									name={
-										themeMode === "dark"
-											? "moon-star"
-											: themeMode === "light"
-												? "sun"
-												: "screen-share"
+										themeMode === 'dark'
+											? 'moon-star'
+											: themeMode === 'light'
+												? 'sun'
+												: 'screen-share'
 									}
 									size={20}
 								/>
@@ -70,5 +93,5 @@ export default function HeaderLayout(props: IHeaderLayoutProps) {
 				)}
 			</HeaderSiderIcon>
 		</div>
-	);
+	)
 }
